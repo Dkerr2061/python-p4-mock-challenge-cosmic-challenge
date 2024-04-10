@@ -26,6 +26,7 @@ class Planet(db.Model, SerializerMixin):
     nearest_star = db.Column(db.String)
 
     # Add relationship
+    missions = db.relationship('Mission', back_populates='planet', cascade='all')
 
     # Add serialization rules
 
@@ -38,10 +39,24 @@ class Scientist(db.Model, SerializerMixin):
     field_of_study = db.Column(db.String)
 
     # Add relationship
+    missions = db.relationship('Mission', back_populates='scientist', cascade='all')
 
     # Add serialization rules
 
     # Add validation
+    @validates('name')
+    def validate_name(self, key, value):
+        if (value == '') or (value == None):
+            raise ValueError('Scientist must have a name')
+        else:
+            return value
+        
+    @validates('field_of_study')
+    def validate_field_of_study(self, key, value):
+        if (value == '') or (value == None):
+            raise ValueError('Scientist must have a field of study')
+        else:
+            return value
 
 
 class Mission(db.Model, SerializerMixin):
@@ -50,11 +65,36 @@ class Mission(db.Model, SerializerMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
 
+    scientist_id = db.Column(db.Integer, db.ForeignKey('scientists.id'))
+    planet_id = db.Column(db.Integer, db.ForeignKey('planets.id'))
+
     # Add relationships
+    scientist = db.relationship('Scientist', back_populates='missions')
+    planet = db.relationship('Planet', back_populates='missions')
 
     # Add serialization rules
 
     # Add validation
+    @validates('name')
+    def validate_name(self, key, value):
+        if (value == '') or (value == None):
+            raise ValueError('Mission must have a name')
+        else:
+            return value
+        
+    @validates('scientist_id')
+    def validate_scientist_id(self, key, value):
+        if (value == 0) or (value == None):
+            raise ValueError('Mission must have a scientist id.')
+        else:
+            return value
+        
+    @validates('planet_id')
+    def validate_planet_id(self, key, value):
+        if (value == 0) or (value == None):
+            raise ValueError('Mission must have a planet id.')
+        else:
+            return value
 
 
 # add any models you may need.
